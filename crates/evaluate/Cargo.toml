@@ -1,0 +1,17 @@
+[package]
+name = "proof-migrate-evaluate"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+proof-migrate-evidence.workspace = true
+proof-migrate-improve.workspace = true
+proof-migrate-projector.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true
+

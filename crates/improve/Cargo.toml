@@ -1,0 +1,16 @@
+[package]
+name = "proof-migrate-improve"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+proof-migrate-evidence.workspace = true
+proof-migrate-projector.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true
+

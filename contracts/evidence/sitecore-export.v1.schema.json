@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-migrate.dev/schema/sitecore-export/v1",
+  "title": "Proof Migrate Sitecore Export V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "corpus_id",
+    "captured_at",
+    "source",
+    "templates",
+    "items",
+    "media",
+    "unknowns",
+    "errors",
+    "extensions"
+  ],
+  "properties": {
+    "api_version": { "const": "proof-migrate.dev/sitecore-export/v1" },
+    "corpus_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "captured_at": { "type": "string", "format": "date-time" },
+    "source": { "$ref": "#/$defs/source" },
+    "templates": { "type": "array", "items": { "$ref": "#/$defs/template" } },
+    "items": { "type": "array", "items": { "$ref": "#/$defs/item" } },
+    "media": { "type": "array", "items": { "$ref": "#/$defs/media" } },
+    "unknowns": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+    "extensions": { "type": "object" }
+  },
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["product", "version", "databases", "topology", "extraction"],
+      "properties": {
+        "product": { "type": "string" },
+        "version": { "type": ["string", "null"] },
+        "databases": { "type": "array", "items": { "type": "string" } },
+        "topology": { "type": "array", "items": { "type": "string" } },
+        "extraction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "tool_version", "native_sitecore_api", "read_only"],
+          "properties": {
+            "mode": { "type": "string" },
+            "tool_version": { "type": "string" },
+            "native_sitecore_api": { "type": "boolean" },
+            "read_only": { "const": true }
+          }
+        }
+      }
+    },
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "path", "base_template_ids", "fields", "extensions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string" },
+        "path": { "type": "string" },
+        "base_template_ids": { "type": "array", "items": { "$ref": "#/$defs/uuid" } },
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/fieldDefinition" } },
+        "extensions": { "type": "object" }
+      }
+    },
+    "fieldDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "field_type", "sharing", "extensions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "name": { "type": "string" },
+        "field_type": { "type": "string" },
+        "sharing": { "enum": ["shared", "unversioned", "versioned"] },
+        "extensions": { "type": "object" }
+      }
+    },
+    "fieldValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field_id", "raw"],
+      "properties": {
+        "field_id": { "$ref": "#/$defs/uuid" },
+        "raw": { "type": ["string", "null"] }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "parent_id",
+        "path",
+        "template_id",
+        "language",
+        "version",
+        "revision",
+        "fields",
+        "layout",
+        "workflow",
+        "security",
+        "extensions"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "parent_id": { "oneOf": [{ "$ref": "#/$defs/uuid" }, { "type": "null" }] },
+        "path": { "type": "string" },
+        "template_id": { "$ref": "#/$defs/uuid" },
+        "language": { "type": "string" },
+        "version": { "type": "integer", "minimum": 1 },
+        "revision": { "$ref": "#/$defs/uuid" },
+        "fields": { "type": "array", "items": { "$ref": "#/$defs/fieldValue" } },
+        "layout": { "type": ["string", "null"] },
+        "workflow": { "type": ["string", "null"] },
+        "security": { "type": ["string", "null"] },
+        "extensions": { "type": "object" }
+      }
+    },
+    "media": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_id", "blob_path", "sha256", "byte_length", "mime_type"],
+      "properties": {
+        "item_id": { "$ref": "#/$defs/uuid" },
+        "blob_path": { "type": "string" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "byte_length": { "type": "integer", "minimum": 0 },
+        "mime_type": { "type": ["string", "null"] }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "subject", "message"],
+      "properties": {
+        "code": { "type": "string" },
+        "subject": { "type": ["string", "null"] },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}
+

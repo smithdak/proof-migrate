@@ -1,0 +1,10 @@
+/target/
+/work/
+/client-workspaces/
+/artifacts/
+**/bin/
+**/obj/
+.idea/
+.vscode/
+*.user
+

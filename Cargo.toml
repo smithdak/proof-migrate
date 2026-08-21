@@ -1,0 +1,41 @@
+[workspace]
+members = [
+    "apps/workbench",
+    "crates/evidence-model",
+    "crates/normalize",
+    "crates/proof-projector",
+    "crates/evaluate",
+    "crates/improve",
+]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+publish = false
+
+[workspace.dependencies]
+anyhow = "1.0.100"
+blake3 = "1.8.5"
+clap = { version = "4.6.5", features = ["derive"] }
+proof-migrate-evaluate = { path = "crates/evaluate" }
+proof-migrate-evidence = { path = "crates/evidence-model" }
+proof-migrate-improve = { path = "crates/improve" }
+proof-migrate-normalize = { path = "crates/normalize" }
+proof-migrate-projector = { path = "crates/proof-projector" }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+serde_json_canonicalizer = "0.3.2"
+tempfile = "3.24.0"
+thiserror = "2.0.19"
+time = { version = "0.3.55", features = ["formatting", "parsing"] }
+uuid = { version = "1.24.0", features = ["serde"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"
+pedantic = "warn"
+

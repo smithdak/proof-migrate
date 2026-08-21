@@ -1,0 +1,189 @@
+{
+  "api_version": "proof-migrate.dev/sitecore-export/v1",
+  "corpus_id": "SYNTH-001",
+  "captured_at": "2026-08-20T20:00:00Z",
+  "source": {
+    "product": "Sitecore XM",
+    "version": "synthetic-10.x-shape",
+    "databases": ["master"],
+    "topology": ["synthetic-offline-fixture"],
+    "extraction": {
+      "mode": "offline_fixture",
+      "tool_version": "0.1.0",
+      "native_sitecore_api": false,
+      "read_only": true
+    }
+  },
+  "templates": [
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "name": "Content Page",
+      "path": "/sitecore/templates/Synthetic/Content Page",
+      "base_template_ids": [],
+      "fields": [
+        {
+          "id": "11111111-1111-4111-8111-111111111121",
+          "name": "Title",
+          "field_type": "Single-Line Text",
+          "sharing": "versioned",
+          "extensions": {}
+        },
+        {
+          "id": "11111111-1111-4111-8111-111111111122",
+          "name": "Body",
+          "field_type": "Rich Text",
+          "sharing": "versioned",
+          "extensions": {}
+        },
+        {
+          "id": "11111111-1111-4111-8111-111111111123",
+          "name": "Related Content",
+          "field_type": "Droplink",
+          "sharing": "shared",
+          "extensions": {}
+        },
+        {
+          "id": "11111111-1111-4111-8111-111111111124",
+          "name": "Legacy Selector A",
+          "field_type": "Synthetic Legacy Selector",
+          "sharing": "unversioned",
+          "extensions": {}
+        },
+        {
+          "id": "11111111-1111-4111-8111-111111111125",
+          "name": "Legacy Selector B",
+          "field_type": "Synthetic Legacy Selector",
+          "sharing": "unversioned",
+          "extensions": {}
+        }
+      ],
+      "extensions": {}
+    },
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "name": "Content Folder",
+      "path": "/sitecore/templates/Synthetic/Content Folder",
+      "base_template_ids": [],
+      "fields": [],
+      "extensions": {}
+    }
+  ],
+  "items": [
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0",
+      "parent_id": null,
+      "path": "/sitecore/content/Synthetic",
+      "template_id": "22222222-2222-4222-8222-222222222222",
+      "language": "en-US",
+      "version": 1,
+      "revision": "aaaaaaaa-0000-4000-8000-000000000001",
+      "fields": [],
+      "layout": null,
+      "workflow": null,
+      "security": "ar|sitecore\\Everyone|pe|+item:read|",
+      "extensions": {}
+    },
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+      "parent_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0",
+      "path": "/sitecore/content/Synthetic/Home",
+      "template_id": "11111111-1111-4111-8111-111111111111",
+      "language": "en-US",
+      "version": 1,
+      "revision": "aaaaaaaa-0000-4000-8000-000000000011",
+      "fields": [
+        { "field_id": "11111111-1111-4111-8111-111111111121", "raw": "Synthetic home" },
+        { "field_id": "11111111-1111-4111-8111-111111111122", "raw": "<p>First revision</p>" },
+        { "field_id": "11111111-1111-4111-8111-111111111123", "raw": "{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAA2}" },
+        { "field_id": "11111111-1111-4111-8111-111111111124", "raw": "legacy:a" },
+        { "field_id": "11111111-1111-4111-8111-111111111125", "raw": "legacy:b" }
+      ],
+      "layout": "<r xmlns:p=\"p\"><d id=\"default\" /></r>",
+      "workflow": "draft",
+      "security": null,
+      "extensions": {}
+    },
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+      "parent_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0",
+      "path": "/sitecore/content/Synthetic/Home",
+      "template_id": "11111111-1111-4111-8111-111111111111",
+      "language": "en-US",
+      "version": 2,
+      "revision": "aaaaaaaa-0000-4000-8000-000000000012",
+      "fields": [
+        { "field_id": "11111111-1111-4111-8111-111111111121", "raw": "Synthetic home" },
+        { "field_id": "11111111-1111-4111-8111-111111111122", "raw": "<p>Current revision</p>" },
+        { "field_id": "11111111-1111-4111-8111-111111111123", "raw": "{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAA2}" },
+        { "field_id": "11111111-1111-4111-8111-111111111124", "raw": "legacy:a" },
+        { "field_id": "11111111-1111-4111-8111-111111111125", "raw": "legacy:b" }
+      ],
+      "layout": "<r xmlns:p=\"p\"><d id=\"default\" /></r>",
+      "workflow": "approved",
+      "security": null,
+      "extensions": {}
+    },
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+      "parent_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0",
+      "path": "/sitecore/content/Synthetic/Home",
+      "template_id": "11111111-1111-4111-8111-111111111111",
+      "language": "fr-FR",
+      "version": 1,
+      "revision": "aaaaaaaa-0000-4000-8000-000000000013",
+      "fields": [
+        { "field_id": "11111111-1111-4111-8111-111111111121", "raw": "Accueil synthétique" },
+        { "field_id": "11111111-1111-4111-8111-111111111122", "raw": "<p>Révision française</p>" },
+        { "field_id": "11111111-1111-4111-8111-111111111123", "raw": "{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAA2}" },
+        { "field_id": "11111111-1111-4111-8111-111111111124", "raw": "legacy:a-fr" },
+        { "field_id": "11111111-1111-4111-8111-111111111125", "raw": "legacy:b-fr" }
+      ],
+      "layout": "<r xmlns:p=\"p\"><d id=\"default\" /></r>",
+      "workflow": "approved",
+      "security": null,
+      "extensions": {}
+    },
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2",
+      "parent_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0",
+      "path": "/sitecore/content/Synthetic/Related",
+      "template_id": "11111111-1111-4111-8111-111111111111",
+      "language": "en-US",
+      "version": 1,
+      "revision": "aaaaaaaa-0000-4000-8000-000000000021",
+      "fields": [
+        { "field_id": "11111111-1111-4111-8111-111111111121", "raw": "Related content" },
+        { "field_id": "11111111-1111-4111-8111-111111111122", "raw": null },
+        { "field_id": "11111111-1111-4111-8111-111111111123", "raw": null },
+        { "field_id": "11111111-1111-4111-8111-111111111124", "raw": "legacy:c" },
+        { "field_id": "11111111-1111-4111-8111-111111111125", "raw": "legacy:d" }
+      ],
+      "layout": null,
+      "workflow": "approved",
+      "security": null,
+      "extensions": {}
+    }
+  ],
+  "media": [
+    {
+      "item_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+      "blob_path": "media/synthetic-home.bin",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "byte_length": 128,
+      "mime_type": "application/octet-stream"
+    }
+  ],
+  "unknowns": [
+    {
+      "code": "analytics-not-exported",
+      "subject": null,
+      "message": "Synthetic fixture intentionally omits analytics behavior."
+    }
+  ],
+  "errors": [],
+  "extensions": {
+    "synthetic": true,
+    "client_data": false
+  }
+}
+

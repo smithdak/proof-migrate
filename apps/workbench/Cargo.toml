@@ -1,0 +1,26 @@
+[package]
+name = "proof-migrate"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+blake3.workspace = true
+clap.workspace = true
+proof-migrate-evaluate.workspace = true
+proof-migrate-evidence.workspace = true
+proof-migrate-improve.workspace = true
+proof-migrate-normalize.workspace = true
+proof-migrate-projector.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true
+

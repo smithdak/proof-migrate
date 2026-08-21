@@ -1,0 +1,25 @@
+{
+  "api_version": "proof-migrate.dev/target-contract/v1",
+  "repository": "https://github.com/smithdak/Proof.git",
+  "revision": "ca9de58c38530fccfe16decf862fedd2cbf8f935",
+  "verified_at": "2026-08-20",
+  "write_mode": "offline-candidate-only",
+  "schema_create": {
+    "api_version": "proof.dev/schema-version/v1",
+    "availability": "offline-candidate",
+    "digest_context": "proof:schema-version:v1"
+  },
+  "object_create": {
+    "api_version": "proof.dev/object-revision/v1",
+    "availability": "offline-candidate",
+    "digest_context": "proof:object-revision:v1"
+  },
+  "locale_rendition": {
+    "api_version": "proof.dev/object-locale-revision/v1",
+    "availability": "requires-governed-proof-changeset",
+    "digest_context": "proof:object-locale-revision:v1"
+  },
+  "canonical_json": "RFC 8785",
+  "digest_algorithm": "BLAKE3-256 domain-separated"
+}
+
