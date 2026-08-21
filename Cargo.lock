@@ -328,6 +328,7 @@ dependencies = [
  "proof-migrate-normalize",
  "proof-migrate-preflight",
  "proof-migrate-projector",
+ "proof-migrate-source-inspect",
  "serde",
  "serde_json",
  "tempfile",
@@ -396,6 +397,19 @@ dependencies = [
  "serde_json",
  "thiserror",
  "uuid",
+]
+
+[[package]]
+name = "proof-migrate-source-inspect"
+version = "0.1.0"
+dependencies = [
+ "proof-migrate-evidence",
+ "proof-migrate-preflight",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "time",
 ]
 
 [[package]]

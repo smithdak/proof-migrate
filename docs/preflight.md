@@ -25,6 +25,23 @@ The contract has no fields for hostnames, endpoints, connection strings, file pa
 
 Real observations must stay in an ignored, isolated client workspace. Only the synthetic fixture belongs in this repository.
 
+## Local solution inspection
+
+`proof-migrate inspect` generates the observation from a local solution folder without pretending that source code is a content export:
+
+```powershell
+$folder = "D:\path\to\sitecore-solution"
+$output = "work\inspection-$([guid]::NewGuid().ToString('N'))"
+cargo run --release -- inspect --source $folder --output $output --approve-read-only-preflight
+Invoke-Item $output
+```
+
+The scanner traverses directory metadata, does not follow links, and refuses to place output inside the source. It opens only bounded `packages.config` files. It uses path names only to classify predefined Sitecore and topology signals, and emits neither raw paths nor package identifiers. Files marked by names such as connection strings, licenses, keys, tokens, passwords, credentials, or secrets are never opened. Source code, configuration bodies, serialized items, media, and database data remain unopened.
+
+The generated observation deliberately leaves database roles, content counts, languages, enabled-module inventory, acquisition environment, and export mechanisms unknown unless safe structural signals exist. Product, version, topology, and export signals discovered from package manifests or layout remain explicitly inferred until confirmed. Therefore a completed inspection normally reports `blocked`; the command still exits `0` because those blockers are its discovery result.
+
+`inspect` is not a native Sitecore extractor and does not create `source-export.json` from a solution repository.
+
 ## Readiness rule
 
 The manifest is `ready` only when all of these are declared:

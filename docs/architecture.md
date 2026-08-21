@@ -2,7 +2,7 @@
 
 ## Current slice
 
-The current implementation proves two offline paths: a content-free estate observation is assessed for extractor-design readiness, and a versioned synthetic Sitecore export is packaged, normalized into target-neutral evidence, projected against a pinned Proof contract, evaluated, and passed through an automatic but non-authorizing improvement loop.
+The current implementation proves three offline paths: an authorized local solution is inspected into a content-free observation, an observation is assessed for extractor-design readiness, and a versioned synthetic Sitecore export is packaged, normalized into target-neutral evidence, projected against a pinned Proof contract, evaluated, and passed through an automatic but non-authorizing improvement loop.
 
 It does not prove native Sitecore extraction, compatibility with any real client estate, current Proof compatibility beyond the pinned commit, rendered equivalence, workflow or security equivalence, production migration, or cutover readiness.
 
@@ -10,6 +10,7 @@ It does not prove native Sitecore extraction, compatibility with any real client
 
 | Component | Responsibility |
 |---|---|
+| `source-inspect` | Bounded, read-only local solution traversal and content-free Sitecore signals |
 | `preflight` | Content-free estate observation validation, commitments, blockers, and acquisition recommendation |
 | `.NET extractor` | Package and hash an authorized offline export; future Sitecore-native adapter boundary |
 | `evidence-model` | Versioned source and canonical evidence contracts |
@@ -24,6 +25,11 @@ It does not prove native Sitecore extraction, compatibility with any real client
 This flow answers which artifact is authoritative at each stage:
 
 ```text
+authorized local solution folder                source metadata only
+  └─ source-inspection.json                     safe signals and scan evidence
+       └─ estate-observation.json               generated planning evidence
+            └─ estate-manifest.json             readiness and explicit blockers
+
 content-free estate observation                 declared planning evidence
   └─ estate-manifest.json                       normalized readiness decision
        └─ ready or explicit blockers            extractor-design gate
@@ -50,6 +56,7 @@ offline Sitecore export                       source artifact
 7. Judgment-heavy or multi-tool repetition becomes a skill candidate only when recurrence and measurable outcomes justify it. Authority-sensitive work is classified as policy, not a skill.
 8. Client workspaces and generated runs are excluded from source control. No raw client evidence belongs in this repository.
 9. Preflight accepts only structured, content-free facts. It rejects observations declared to contain content, credentials, or personal data, and never performs estate access or writes.
+10. Solution inspection does not follow links, rejects output inside the source, opens only bounded package manifests, never opens secret-marked files, and emits no paths, package names, source content, or credential values.
 
 ## Identity
 

@@ -54,6 +54,9 @@ jobs:
       - name: Run content-free estate preflight
         run: cargo run --locked --release -- preflight --observation evaluations/fixtures/estate-observation.synthetic.json --output work/ci-preflight
 
+      - name: Run read-only solution inspection
+        run: cargo run --locked --release -- inspect --source evaluations/fixtures/sitecore-solution.synthetic --output work/ci-inspection --estate-id SYNTH-CI-INSPECT-001 --observed-at 2026-08-21T12:00:00Z
+
       - name: Package synthetic export
         run: dotnet run --project apps/sitecore-extractor/ProofMigrate.SitecoreExtractor.csproj --configuration Release --no-build -- package --input evaluations/fixtures/sitecore-export.synthetic.json --output work/ci-extract
 

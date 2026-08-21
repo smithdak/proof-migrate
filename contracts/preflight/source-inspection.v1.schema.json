@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-migrate.dev/contracts/preflight/source-inspection.v1.schema.json",
+  "title": "Proof Migrate source inspection v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "scanner_version",
+    "estate_id",
+    "source_kind",
+    "statistics",
+    "signals",
+    "safety",
+    "finding_codes"
+  ],
+  "properties": {
+    "api_version": {
+      "const": "proof-migrate.dev/source-inspection/v1"
+    },
+    "scanner_version": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/safeIdentifier"
+    },
+    "estate_id": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/safeIdentifier"
+    },
+    "source_kind": {
+      "enum": [
+        "sitecore_solution",
+        "unknown_directory"
+      ]
+    },
+    "statistics": {
+      "$ref": "#/$defs/statistics"
+    },
+    "signals": {
+      "$ref": "#/$defs/signals"
+    },
+    "safety": {
+      "$ref": "#/$defs/safety"
+    },
+    "finding_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "estate-observation.v1.schema.json#/$defs/safeIdentifier"
+      }
+    }
+  },
+  "$defs": {
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "statistics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries_seen",
+        "files_seen",
+        "directories_seen",
+        "symlinks_skipped",
+        "excluded_directories",
+        "unreadable_entries",
+        "safe_manifests_read",
+        "safe_manifest_bytes_read",
+        "sensitive_file_markers_skipped",
+        "serialization_markers"
+      ],
+      "properties": {
+        "entries_seen": {
+          "$ref": "#/$defs/count"
+        },
+        "files_seen": {
+          "$ref": "#/$defs/count"
+        },
+        "directories_seen": {
+          "$ref": "#/$defs/count"
+        },
+        "symlinks_skipped": {
+          "$ref": "#/$defs/count"
+        },
+        "excluded_directories": {
+          "$ref": "#/$defs/count"
+        },
+        "unreadable_entries": {
+          "$ref": "#/$defs/count"
+        },
+        "safe_manifests_read": {
+          "$ref": "#/$defs/count"
+        },
+        "safe_manifest_bytes_read": {
+          "$ref": "#/$defs/count"
+        },
+        "sensitive_file_markers_skipped": {
+          "$ref": "#/$defs/count"
+        },
+        "serialization_markers": {
+          "$ref": "#/$defs/count"
+        }
+      }
+    },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sitecore_marker_count",
+        "sitecore_packages_observed",
+        "product_version_candidate_count",
+        "inferred_roles",
+        "inferred_export_mechanisms"
+      ],
+      "properties": {
+        "sitecore_marker_count": {
+          "$ref": "#/$defs/count"
+        },
+        "sitecore_packages_observed": {
+          "$ref": "#/$defs/count"
+        },
+        "product_version_candidate_count": {
+          "$ref": "#/$defs/count"
+        },
+        "inferred_roles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "estate-observation.v1.schema.json#/$defs/estateRole"
+          }
+        },
+        "inferred_export_mechanisms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "existing_offline_export",
+              "serialization",
+              "package",
+              "native_api",
+              "offline_database_backup"
+            ]
+          }
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_access",
+        "file_content_policy",
+        "network_access",
+        "sensitive_marked_files_opened",
+        "source_writes_performed"
+      ],
+      "properties": {
+        "source_access": {
+          "const": "read_only"
+        },
+        "file_content_policy": {
+          "const": "allowlisted_package_manifests_only"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "sensitive_marked_files_opened": {
+          "const": 0
+        },
+        "source_writes_performed": {
+          "const": 0
+        }
+      }
+    }
+  }
+}

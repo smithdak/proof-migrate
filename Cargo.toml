@@ -7,6 +7,7 @@ members = [
     "crates/evaluate",
     "crates/improve",
     "crates/preflight",
+    "crates/source-inspect",
 ]
 resolver = "3"
 
@@ -26,6 +27,7 @@ proof-migrate-improve = { path = "crates/improve" }
 proof-migrate-normalize = { path = "crates/normalize" }
 proof-migrate-preflight = { path = "crates/preflight" }
 proof-migrate-projector = { path = "crates/proof-projector" }
+proof-migrate-source-inspect = { path = "crates/source-inspect" }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 serde_json_canonicalizer = "0.3.2"

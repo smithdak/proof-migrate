@@ -15,6 +15,7 @@ proof-migrate-improve.workspace = true
 proof-migrate-normalize.workspace = true
 proof-migrate-preflight.workspace = true
 proof-migrate-projector.workspace = true
+proof-migrate-source-inspect.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tempfile.workspace = true

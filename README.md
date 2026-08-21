@@ -3,7 +3,7 @@
 An operator-run, offline-first Sitecore-to-Proof migration workbench that preserves source evidence, produces replaceable Proof candidates, and improves only inside replay-proven safety limits.
 
 > [!IMPORTANT]
-> The implemented slice runs against synthetic or already-authorized offline exports. It does not connect to any client Sitecore estate, use native Sitecore APIs, write to Proof, perform a migration, or authorize production work.
+> The implemented slice inspects authorized local solution folders and runs against synthetic or already-authorized offline exports. It does not connect to a Sitecore estate, open content or secret-marked files during solution inspection, use native Sitecore APIs, write to Proof, perform a migration, or authorize production work.
 
 ## What works now
 
@@ -15,6 +15,7 @@ An operator-run, offline-first Sitecore-to-Proof migration workbench that preser
 - Automatically promotes only non-production, read-only, non-lossy rules whose candidate payload remains unchanged and whose shadow output is byte reproducible; preservation does not erase the underlying semantic gap.
 - Emits a complete evidence bundle, Proof candidate, gap-aware evaluation, improvement report, and artifact manifest without overwriting prior output.
 - Validates a content-free estate observation, commits its exact and normalized forms, and emits a deterministic readiness decision without contacting Sitecore or Proof.
+- Inspects a local Sitecore solution read-only, opens only bounded `packages.config` manifests, emits no raw paths or source content, and turns missing facts into explicit preflight blockers.
 - Runs the full quality and synthetic qualification path on both Windows and Linux in GitHub Actions.
 
 ## Quick start
@@ -23,9 +24,13 @@ Prerequisites are Rust 1.97.1, .NET 8, and PowerShell. The included fixture is s
 
 ```powershell
 $runId = [guid]::NewGuid().ToString("N")
+$inspection = Join-Path work "inspection-$runId"
 $preflight = Join-Path work "preflight-$runId"
 $extract = Join-Path work "extract-$runId"
 $result = Join-Path work "result-$runId"
+
+cargo run --release -- inspect --source evaluations/fixtures/sitecore-solution.synthetic --output $inspection
+Get-Content (Join-Path $inspection "source-inspection.json")
 
 cargo run --release -- preflight --observation evaluations/fixtures/estate-observation.synthetic.json --output $preflight
 Get-Content (Join-Path $preflight "estate-manifest.json")
@@ -38,6 +43,32 @@ Get-Content (Join-Path $result "evaluation.json")
 Every output directory is immutable from the tool's perspective. Use a new path for each run; existing paths fail closed.
 
 The preflight command exits `0` only when the declared observation is ready for extractor design, `2` when it is valid but blocked, and `1` when the contract or safety boundary is invalid. A ready result qualifies the declaration; it does not independently verify the estate or authorization.
+
+The inspect command exits `0` when discovery completes, even when the generated preflight is blocked. A blocker is a successful finding, not a scanner failure.
+
+## Inspect a local solution
+
+Use a new output directory outside the source folder:
+
+```powershell
+$folder = "D:\path\to\sitecore-solution"
+$output = "work\inspection-$([guid]::NewGuid().ToString('N'))"
+cargo run --release -- inspect --source $folder --output $output --approve-read-only-preflight
+Invoke-Item $output
+```
+
+Inspection walks metadata without following links. It opens only files named `packages.config`, bounded to one MiB each, and extracts only numeric versions belonging to `Sitecore.*` package entries. Connection-string, license, certificate, key, token, password, and credential-marked files are classified by name but never opened. All other file contents remain unopened. Output inside the source folder is rejected.
+
+This command assesses a solution repository. It does not extract Sitecore database content or make the folder a migration-ready export.
+
+## Inspection bundle
+
+| Artifact | Role |
+|---|---|
+| `source-inspection.json` | Content-free structural signals, scan statistics, safety counters, and unresolved facts |
+| `estate-observation.json` | Generated versioned preflight input with no source paths or content |
+| `estate-manifest.json` | Preflight assessment and explicit blockers |
+| `inspect-run-manifest.json` | Size and digest commitments for the three inspection artifacts |
 
 ## Preflight bundle
 
@@ -91,6 +122,7 @@ The same gates plus the two executable synthetic paths run on `windows-latest` a
 - [Sitecore export contract](contracts/evidence/sitecore-export.v1.schema.json)
 - [Estate observation contract](contracts/preflight/estate-observation.v1.schema.json)
 - [Estate manifest contract](contracts/preflight/estate-manifest.v1.schema.json)
+- [Source inspection contract](contracts/preflight/source-inspection.v1.schema.json)
 - [Pinned Proof target contract](contracts/proof/contract.v1.json)
 - [Synthetic evaluation corpus](evaluations/README.md)
 - [Capability lifecycle](skills/README.md)

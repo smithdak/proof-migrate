@@ -3,7 +3,9 @@
 use std::{path::PathBuf, process::ExitCode};
 
 use clap::{Parser, Subcommand};
-use proof_migrate::{PreflightConfig, RunConfig, run_pipeline, run_preflight};
+use proof_migrate::{
+    InspectConfig, PreflightConfig, RunConfig, run_inspection, run_pipeline, run_preflight,
+};
 use proof_migrate_evaluate::EvaluationVerdict;
 use proof_migrate_preflight::PreflightStatus;
 use serde::Serialize;
@@ -38,6 +40,21 @@ enum Command {
         observation: PathBuf,
         #[arg(long)]
         output: PathBuf,
+    },
+    /// Inspect a local Sitecore solution without reading content or secret-bearing files.
+    Inspect {
+        #[arg(long)]
+        source: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        #[arg(long)]
+        estate_id: Option<String>,
+        #[arg(long)]
+        observed_at: Option<String>,
+        #[arg(long)]
+        authorization_reference: Option<String>,
+        #[arg(long)]
+        approve_read_only_preflight: bool,
     },
 }
 
@@ -83,6 +100,27 @@ fn main() -> ExitCode {
                     ExitCode::from(2)
                 }
             }
+            Err(error) => fail(&error),
+        },
+        Command::Inspect {
+            source,
+            output,
+            estate_id,
+            observed_at,
+            authorization_reference,
+            approve_read_only_preflight,
+        } => match run_inspection(&InspectConfig {
+            source,
+            output,
+            estate_id,
+            observed_at,
+            authorization_reference,
+            approved_for_read_only_preflight: approve_read_only_preflight,
+        }) {
+            Ok(summary) => match print_summary(&summary) {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(exit) => exit,
+            },
             Err(error) => fail(&error),
         },
     }

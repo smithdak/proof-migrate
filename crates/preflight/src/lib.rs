@@ -201,6 +201,7 @@ pub struct ToolActivityV1 {
 #[serde(rename_all = "snake_case")]
 pub enum EvidenceBasis {
     DeclaredObservation,
+    GeneratedSourceInspection,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
@@ -252,8 +253,25 @@ pub enum PreflightError {
 ///
 /// Returns an error when the observation violates the versioned contract or safety boundary.
 pub fn assess(
+    observation: EstateObservationV1,
+    raw_observation_bytes: &[u8],
+) -> Result<EstateManifestV1, PreflightError> {
+    assess_with_basis(
+        observation,
+        raw_observation_bytes,
+        EvidenceBasis::DeclaredObservation,
+    )
+}
+
+/// Validates and assesses an observation with an explicit evidence origin.
+///
+/// # Errors
+///
+/// Returns an error when the observation violates the versioned contract or safety boundary.
+pub fn assess_with_basis(
     mut observation: EstateObservationV1,
     raw_observation_bytes: &[u8],
+    evidence_basis: EvidenceBasis,
 ) -> Result<EstateManifestV1, PreflightError> {
     validate_envelope(&observation)?;
     validate_and_sort(&mut observation)?;
@@ -267,7 +285,7 @@ pub fn assess(
         "proof-migrate:estate-observation-source:v1",
         raw_observation_bytes,
     );
-    let assessment = make_assessment(&observation);
+    let assessment = make_assessment(&observation, evidence_basis);
 
     Ok(EstateManifestV1 {
         api_version: ESTATE_MANIFEST_API_V1.to_owned(),
@@ -368,7 +386,10 @@ fn validate_and_sort(observation: &mut EstateObservationV1) -> Result<(), Prefli
     Ok(())
 }
 
-fn make_assessment(observation: &EstateObservationV1) -> PreflightAssessmentV1 {
+fn make_assessment(
+    observation: &EstateObservationV1,
+    evidence_basis: EvidenceBasis,
+) -> PreflightAssessmentV1 {
     let recommended = recommended_acquisition_path(&observation.export_mechanisms);
     let mut blockers = BTreeSet::new();
     if !observation.authorization.approved_for_read_only_preflight {
@@ -405,7 +426,7 @@ fn make_assessment(observation: &EstateObservationV1) -> PreflightAssessmentV1 {
     let ready = blocker_codes.is_empty();
 
     PreflightAssessmentV1 {
-        evidence_basis: EvidenceBasis::DeclaredObservation,
+        evidence_basis,
         status: if ready {
             PreflightStatus::Ready
         } else {

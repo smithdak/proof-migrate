@@ -134,7 +134,10 @@
       ],
       "properties": {
         "evidence_basis": {
-          "const": "declared_observation"
+          "enum": [
+            "declared_observation",
+            "generated_source_inspection"
+          ]
         },
         "status": {
           "enum": [

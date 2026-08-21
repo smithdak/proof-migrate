@@ -65,3 +65,31 @@ fn unsafe_preflight_returns_failure() {
             .contains("must not contain credentials")
     );
 }
+
+#[test]
+fn blocked_folder_inspection_is_a_successful_discovery_run() {
+    let temp = tempdir().unwrap();
+    let source = temp.path().join("source");
+    fs::create_dir(&source).unwrap();
+    fs::write(source.join("Sitecore.config"), "not opened").unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_proof-migrate"))
+        .arg("inspect")
+        .arg("--source")
+        .arg(&source)
+        .arg("--output")
+        .arg(temp.path().join("output"))
+        .arg("--estate-id")
+        .arg("SYNTH-CLI-INSPECT-001")
+        .arg("--observed-at")
+        .arg("2026-08-21T12:00:00Z")
+        .output()
+        .unwrap();
+
+    assert_eq!(output.status.code(), Some(0));
+    assert!(
+        String::from_utf8(output.stdout)
+            .unwrap()
+            .contains(r#""preflight_status": "blocked""#)
+    );
+}
