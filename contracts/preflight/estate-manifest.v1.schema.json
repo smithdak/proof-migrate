@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-migrate.dev/contracts/preflight/estate-manifest.v1.schema.json",
+  "title": "Proof Migrate estate manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "estate_id",
+    "observed_at",
+    "observation_commitment",
+    "semantic_snapshot_id",
+    "product",
+    "environment_class",
+    "deployment_model",
+    "roles",
+    "databases",
+    "modules",
+    "languages",
+    "counts",
+    "export_mechanisms",
+    "custom_field_types",
+    "unknown_fact_codes",
+    "authorization",
+    "data_safety",
+    "assessment"
+  ],
+  "properties": {
+    "api_version": {
+      "const": "proof-migrate.dev/estate-manifest/v1"
+    },
+    "estate_id": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/safeIdentifier"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "observation_commitment": {
+      "$ref": "#/$defs/blake3Digest"
+    },
+    "semantic_snapshot_id": {
+      "$ref": "#/$defs/blake3Digest"
+    },
+    "product": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/product"
+    },
+    "environment_class": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/environmentClass"
+    },
+    "deployment_model": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/deploymentModel"
+    },
+    "roles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "estate-observation.v1.schema.json#/$defs/estateRole"
+      }
+    },
+    "databases": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "estate-observation.v1.schema.json#/$defs/databaseRole"
+      }
+    },
+    "modules": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "estate-observation.v1.schema.json#/$defs/module"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "estate-observation.v1.schema.json#/$defs/language"
+      }
+    },
+    "counts": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/counts"
+    },
+    "export_mechanisms": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "estate-observation.v1.schema.json#/$defs/exportMechanism"
+      }
+    },
+    "custom_field_types": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "estate-observation.v1.schema.json#/$defs/safeIdentifier"
+      }
+    },
+    "unknown_fact_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "estate-observation.v1.schema.json#/$defs/safeIdentifier"
+      }
+    },
+    "authorization": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/authorization"
+    },
+    "data_safety": {
+      "$ref": "estate-observation.v1.schema.json#/$defs/dataSafety"
+    },
+    "assessment": {
+      "$ref": "#/$defs/assessment"
+    }
+  },
+  "$defs": {
+    "blake3Digest": {
+      "type": "string",
+      "pattern": "^blake3:[0-9a-f]{64}$"
+    },
+    "assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_basis",
+        "status",
+        "ready_for_extractor_design",
+        "recommended_acquisition_path",
+        "native_extractor_required",
+        "blocker_codes",
+        "unresolved_fact_codes",
+        "tool_activity"
+      ],
+      "properties": {
+        "evidence_basis": {
+          "const": "declared_observation"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "blocked"
+          ]
+        },
+        "ready_for_extractor_design": {
+          "type": "boolean"
+        },
+        "recommended_acquisition_path": {
+          "enum": [
+            "existing_offline_export",
+            "serialization",
+            "package",
+            "native_api",
+            "offline_database_backup",
+            "blocked"
+          ]
+        },
+        "native_extractor_required": {
+          "type": "boolean"
+        },
+        "blocker_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "estate-observation.v1.schema.json#/$defs/safeIdentifier"
+          }
+        },
+        "unresolved_fact_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "estate-observation.v1.schema.json#/$defs/safeIdentifier"
+          }
+        },
+        "tool_activity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "estate_access_performed_by_tool",
+            "estate_writes_performed_by_tool",
+            "proof_writes_performed_by_tool"
+          ],
+          "properties": {
+            "estate_access_performed_by_tool": {
+              "const": false
+            },
+            "estate_writes_performed_by_tool": {
+              "const": false
+            },
+            "proof_writes_performed_by_tool": {
+              "const": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

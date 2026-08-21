@@ -1,0 +1,64 @@
+{
+  "api_version": "proof-migrate.dev/estate-observation/v1",
+  "estate_id": "SYNTH-ESTATE-001",
+  "observed_at": "2026-08-21T12:00:00Z",
+  "product": {
+    "family": "sitecore_xm",
+    "version": "10.3",
+    "build": "10.3.1-rev.010203"
+  },
+  "environment_class": "non_production_clone",
+  "deployment_model": "scaled",
+  "roles": [
+    "content_delivery",
+    "content_management"
+  ],
+  "databases": [
+    "core",
+    "master",
+    "web"
+  ],
+  "modules": [
+    {
+      "id": "synthetic.forms",
+      "version": "1.0"
+    }
+  ],
+  "languages": [
+    "en-US",
+    "fr-CA"
+  ],
+  "counts": {
+    "templates": 25,
+    "items": 1000,
+    "media_items": 80
+  },
+  "export_mechanisms": [
+    {
+      "kind": "existing_offline_export",
+      "available": true,
+      "read_only": true
+    },
+    {
+      "kind": "native_api",
+      "available": true,
+      "read_only": true
+    }
+  ],
+  "custom_field_types": [
+    "synthetic.lookup"
+  ],
+  "unknown_fact_codes": [],
+  "authorization": {
+    "reference": "SYNTH-AUTH-001",
+    "approved_for_read_only_preflight": true
+  },
+  "data_safety": {
+    "read_only": true,
+    "contains": {
+      "content": false,
+      "credentials": false,
+      "personal_data": false
+    }
+  }
+}

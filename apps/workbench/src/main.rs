@@ -3,8 +3,10 @@
 use std::{path::PathBuf, process::ExitCode};
 
 use clap::{Parser, Subcommand};
-use proof_migrate::{RunConfig, run_pipeline};
+use proof_migrate::{PreflightConfig, RunConfig, run_pipeline, run_preflight};
 use proof_migrate_evaluate::EvaluationVerdict;
+use proof_migrate_preflight::PreflightStatus;
+use serde::Serialize;
 
 #[derive(Debug, Parser)]
 #[command(
@@ -30,40 +32,76 @@ enum Command {
         #[arg(long, default_value = "en-US")]
         source_locale: String,
     },
+    /// Validate a content-free estate observation and emit a read-only readiness manifest.
+    Preflight {
+        #[arg(long)]
+        observation: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
 }
 
 fn main() -> ExitCode {
-    let result = match Cli::parse().command {
+    match Cli::parse().command {
         Command::Run {
             source,
             contract,
             output,
             source_locale,
-        } => run_pipeline(&RunConfig {
+        } => match run_pipeline(&RunConfig {
             source,
             target_contract: contract,
             output,
             source_locale,
-        }),
-    };
-    match result {
-        Ok(summary) => {
-            match serde_json::to_string_pretty(&summary) {
-                Ok(serialized) => println!("{serialized}"),
-                Err(error) => {
-                    eprintln!("failed to serialize run summary: {error}");
-                    return ExitCode::FAILURE;
+        }) {
+            Ok(summary) => {
+                if let Err(exit) = print_summary(&summary) {
+                    return exit;
+                }
+                if summary.evaluation_verdict == EvaluationVerdict::Pass {
+                    ExitCode::SUCCESS
+                } else {
+                    ExitCode::from(2)
                 }
             }
-            if summary.evaluation_verdict == EvaluationVerdict::Pass {
-                ExitCode::SUCCESS
-            } else {
-                ExitCode::from(2)
+            Err(error) => fail(&error),
+        },
+        Command::Preflight {
+            observation,
+            output,
+        } => match run_preflight(&PreflightConfig {
+            observation,
+            output,
+        }) {
+            Ok(summary) => {
+                if let Err(exit) = print_summary(&summary) {
+                    return exit;
+                }
+                if summary.status == PreflightStatus::Ready {
+                    ExitCode::SUCCESS
+                } else {
+                    ExitCode::from(2)
+                }
             }
+            Err(error) => fail(&error),
+        },
+    }
+}
+
+fn print_summary(summary: &impl Serialize) -> Result<(), ExitCode> {
+    match serde_json::to_string_pretty(summary) {
+        Ok(serialized) => {
+            println!("{serialized}");
+            Ok(())
         }
         Err(error) => {
-            eprintln!("{error:#}");
-            ExitCode::FAILURE
+            eprintln!("failed to serialize command summary: {error}");
+            Err(ExitCode::FAILURE)
         }
     }
+}
+
+fn fail(error: &anyhow::Error) -> ExitCode {
+    eprintln!("{error:#}");
+    ExitCode::FAILURE
 }

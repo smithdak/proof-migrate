@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proof-migrate.dev/contracts/preflight/estate-observation.v1.schema.json",
+  "title": "Proof Migrate estate observation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "estate_id",
+    "observed_at",
+    "product",
+    "environment_class",
+    "deployment_model",
+    "counts",
+    "authorization",
+    "data_safety"
+  ],
+  "properties": {
+    "api_version": {
+      "const": "proof-migrate.dev/estate-observation/v1"
+    },
+    "estate_id": {
+      "$ref": "#/$defs/safeIdentifier"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "product": {
+      "$ref": "#/$defs/product"
+    },
+    "environment_class": {
+      "$ref": "#/$defs/environmentClass"
+    },
+    "deployment_model": {
+      "$ref": "#/$defs/deploymentModel"
+    },
+    "roles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/estateRole"
+      }
+    },
+    "databases": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/databaseRole"
+      }
+    },
+    "modules": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/module"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/language"
+      }
+    },
+    "counts": {
+      "$ref": "#/$defs/counts"
+    },
+    "export_mechanisms": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/exportMechanism"
+      }
+    },
+    "custom_field_types": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/safeIdentifier"
+      }
+    },
+    "unknown_fact_codes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/safeIdentifier"
+      }
+    },
+    "authorization": {
+      "$ref": "#/$defs/authorization"
+    },
+    "data_safety": {
+      "$ref": "#/$defs/dataSafety"
+    }
+  },
+  "$defs": {
+    "safeIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:+-]+$"
+    },
+    "language": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 35,
+      "pattern": "^[A-Za-z0-9]{1,8}(?:-[A-Za-z0-9]{1,8})*$"
+    },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family",
+        "version",
+        "build"
+      ],
+      "properties": {
+        "family": {
+          "enum": [
+            "sitecore_xm",
+            "sitecore_xp",
+            "unknown"
+          ]
+        },
+        "version": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/safeIdentifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "build": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/safeIdentifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "environmentClass": {
+      "enum": [
+        "production_read_only",
+        "non_production",
+        "non_production_clone",
+        "unknown"
+      ]
+    },
+    "deploymentModel": {
+      "enum": [
+        "single_instance",
+        "scaled",
+        "containerized",
+        "managed_cloud",
+        "unknown"
+      ]
+    },
+    "estateRole": {
+      "enum": [
+        "content_management",
+        "content_delivery",
+        "xconnect",
+        "processing",
+        "reporting",
+        "identity"
+      ]
+    },
+    "databaseRole": {
+      "enum": [
+        "core",
+        "master",
+        "web",
+        "experience_forms",
+        "reporting",
+        "analytics"
+      ]
+    },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/safeIdentifier"
+        },
+        "version": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/safeIdentifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "templates",
+        "items",
+        "media_items"
+      ],
+      "properties": {
+        "templates": {
+          "$ref": "#/$defs/optionalCount"
+        },
+        "items": {
+          "$ref": "#/$defs/optionalCount"
+        },
+        "media_items": {
+          "$ref": "#/$defs/optionalCount"
+        }
+      }
+    },
+    "optionalCount": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "exportMechanism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "available",
+        "read_only"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "existing_offline_export",
+            "serialization",
+            "package",
+            "native_api",
+            "offline_database_backup"
+          ]
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "read_only": {
+          "type": "boolean"
+        }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference",
+        "approved_for_read_only_preflight"
+      ],
+      "properties": {
+        "reference": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/safeIdentifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approved_for_read_only_preflight": {
+          "type": "boolean"
+        }
+      }
+    },
+    "dataSafety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_only",
+        "contains"
+      ],
+      "properties": {
+        "read_only": {
+          "const": true
+        },
+        "contains": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "content",
+            "credentials",
+            "personal_data"
+          ],
+          "properties": {
+            "content": {
+              "const": false
+            },
+            "credentials": {
+              "const": false
+            },
+            "personal_data": {
+              "const": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

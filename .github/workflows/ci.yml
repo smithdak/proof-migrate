@@ -1,0 +1,61 @@
+name: CI
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install .NET 8
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install 1.97.1 --profile minimal --component clippy,rustfmt
+
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+
+      - name: Lint Rust workspace
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Test Rust workspace
+        run: cargo test --workspace --all-targets --locked
+
+      - name: Build offline .NET extractor
+        run: dotnet build apps/sitecore-extractor/ProofMigrate.SitecoreExtractor.csproj --configuration Release
+
+      - name: Run content-free estate preflight
+        run: cargo run --locked --release -- preflight --observation evaluations/fixtures/estate-observation.synthetic.json --output work/ci-preflight
+
+      - name: Package synthetic export
+        run: dotnet run --project apps/sitecore-extractor/ProofMigrate.SitecoreExtractor.csproj --configuration Release --no-build -- package --input evaluations/fixtures/sitecore-export.synthetic.json --output work/ci-extract
+
+      - name: Run synthetic migration qualification
+        run: cargo run --locked --release -- run --source work/ci-extract/source-export.json --contract contracts/proof/contract.v1.json --output work/ci-result --source-locale en-US

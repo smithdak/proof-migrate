@@ -14,6 +14,8 @@ An operator-run, offline-first Sitecore-to-Proof migration workbench that preser
 - Detects repeated task signatures without a model or catalog scan, distinguishes functions, rules, skills, fixtures, and policies, and replay-tests candidates.
 - Automatically promotes only non-production, read-only, non-lossy rules whose candidate payload remains unchanged and whose shadow output is byte reproducible; preservation does not erase the underlying semantic gap.
 - Emits a complete evidence bundle, Proof candidate, gap-aware evaluation, improvement report, and artifact manifest without overwriting prior output.
+- Validates a content-free estate observation, commits its exact and normalized forms, and emits a deterministic readiness decision without contacting Sitecore or Proof.
+- Runs the full quality and synthetic qualification path on both Windows and Linux in GitHub Actions.
 
 ## Quick start
 
@@ -21,8 +23,12 @@ Prerequisites are Rust 1.97.1, .NET 8, and PowerShell. The included fixture is s
 
 ```powershell
 $runId = [guid]::NewGuid().ToString("N")
+$preflight = Join-Path work "preflight-$runId"
 $extract = Join-Path work "extract-$runId"
 $result = Join-Path work "result-$runId"
+
+cargo run --release -- preflight --observation evaluations/fixtures/estate-observation.synthetic.json --output $preflight
+Get-Content (Join-Path $preflight "estate-manifest.json")
 
 dotnet run --project apps/sitecore-extractor/ProofMigrate.SitecoreExtractor.csproj --configuration Release -- package --input evaluations/fixtures/sitecore-export.synthetic.json --output $extract
 cargo run --release -- run --source (Join-Path $extract "source-export.json") --output $result --source-locale en-US
@@ -30,6 +36,15 @@ Get-Content (Join-Path $result "evaluation.json")
 ```
 
 Every output directory is immutable from the tool's perspective. Use a new path for each run; existing paths fail closed.
+
+The preflight command exits `0` only when the declared observation is ready for extractor design, `2` when it is valid but blocked, and `1` when the contract or safety boundary is invalid. A ready result qualifies the declaration; it does not independently verify the estate or authorization.
+
+## Preflight bundle
+
+| Artifact | Role |
+|---|---|
+| `estate-manifest.json` | Normalized estate facts, exact input commitment, semantic snapshot, readiness, acquisition recommendation, and blockers |
+| `preflight-run-manifest.json` | Size and digest commitment for the estate manifest |
 
 ## Output bundle
 
@@ -67,10 +82,15 @@ cargo test --workspace --all-targets
 dotnet build apps/sitecore-extractor/ProofMigrate.SitecoreExtractor.csproj --configuration Release
 ```
 
+The same gates plus the two executable synthetic paths run on `windows-latest` and `ubuntu-latest` for every pull request and every push to `main`.
+
 ## Documentation
 
 - [Architecture and boundaries](docs/architecture.md)
+- [Read-only estate preflight](docs/preflight.md)
 - [Sitecore export contract](contracts/evidence/sitecore-export.v1.schema.json)
+- [Estate observation contract](contracts/preflight/estate-observation.v1.schema.json)
+- [Estate manifest contract](contracts/preflight/estate-manifest.v1.schema.json)
 - [Pinned Proof target contract](contracts/proof/contract.v1.json)
 - [Synthetic evaluation corpus](evaluations/README.md)
 - [Capability lifecycle](skills/README.md)

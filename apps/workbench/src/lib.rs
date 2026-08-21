@@ -12,11 +12,15 @@ use proof_migrate_evaluate::{EvaluationReportV1, EvaluationVerdict, evaluate};
 use proof_migrate_evidence::{EvidenceBundleV1, SitecoreExportV1, canonical_json, domain_digest};
 use proof_migrate_improve::{ImprovementReportV1, improve};
 use proof_migrate_normalize::normalize;
+use proof_migrate_preflight::{
+    EstateManifestV1, EstateObservationV1, PreflightStatus, RecommendedAcquisitionPath, assess,
+};
 use proof_migrate_projector::{ProofCandidateBundleV1, ProofTargetContractV1};
 use serde::{Deserialize, Serialize};
 use tempfile::Builder;
 
 const MAX_SOURCE_BYTES: u64 = 256 * 1024 * 1024;
+const MAX_OBSERVATION_BYTES: u64 = 1024 * 1024;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RunConfig {
@@ -36,6 +40,24 @@ pub struct RunSummaryV1 {
     pub promoted_candidate_count: u64,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PreflightConfig {
+    pub observation: PathBuf,
+    pub output: PathBuf,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PreflightSummaryV1 {
+    pub api_version: String,
+    pub output: String,
+    pub estate_id: String,
+    pub semantic_snapshot_id: String,
+    pub status: PreflightStatus,
+    pub ready_for_extractor_design: bool,
+    pub recommended_acquisition_path: RecommendedAcquisitionPath,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct RunManifestV1 {
@@ -50,6 +72,15 @@ struct ArtifactManifestEntryV1 {
     path: String,
     byte_length: u64,
     digest: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct PreflightRunManifestV1 {
+    api_version: String,
+    estate_id: String,
+    semantic_snapshot_id: String,
+    artifacts: Vec<ArtifactManifestEntryV1>,
 }
 
 /// Runs the complete offline pipeline and atomically publishes its artifact bundle.
@@ -122,6 +153,62 @@ pub fn run_pipeline(config: &RunConfig) -> Result<RunSummaryV1> {
     })
 }
 
+/// Validates a local, content-free estate observation and atomically publishes its assessment.
+///
+/// This command performs no network access, estate access, Sitecore write, or Proof write. The
+/// resulting readiness decision is based on declared input facts rather than independently
+/// verified estate state.
+///
+/// # Errors
+///
+/// Returns an error when the input violates the preflight contract, the output already exists,
+/// or the complete output bundle cannot be staged and published.
+pub fn run_preflight(config: &PreflightConfig) -> Result<PreflightSummaryV1> {
+    if config.output.exists() {
+        bail!(
+            "output path already exists; choose a new directory to preserve prior evidence: {}",
+            config.output.display()
+        );
+    }
+    let observation_bytes =
+        read_bounded(&config.observation, MAX_OBSERVATION_BYTES).with_context(|| {
+            format!(
+                "failed to read estate observation {}",
+                config.observation.display()
+            )
+        })?;
+    let observation = serde_json::from_slice::<EstateObservationV1>(&observation_bytes)
+        .context("input did not satisfy the versioned, content-free estate observation contract")?;
+    let manifest = assess(observation, &observation_bytes)
+        .context("estate observation failed read-only preflight validation")?;
+
+    let parent = config.output.parent().unwrap_or_else(|| Path::new("."));
+    fs::create_dir_all(parent)
+        .with_context(|| format!("failed to create output parent {}", parent.display()))?;
+    let stage = Builder::new()
+        .prefix(".proof-migrate-preflight-stage-")
+        .tempdir_in(parent)
+        .context("failed to create an isolated preflight staging directory")?;
+    write_preflight_artifacts(stage.path(), &manifest)?;
+    let stage_path = stage.keep();
+    fs::rename(&stage_path, &config.output).with_context(|| {
+        format!(
+            "failed to publish the complete preflight bundle to {}",
+            config.output.display()
+        )
+    })?;
+
+    Ok(PreflightSummaryV1 {
+        api_version: "proof-migrate.dev/preflight-summary/v1".to_owned(),
+        output: config.output.display().to_string(),
+        estate_id: manifest.estate_id,
+        semantic_snapshot_id: manifest.semantic_snapshot_id,
+        status: manifest.assessment.status,
+        ready_for_extractor_design: manifest.assessment.ready_for_extractor_design,
+        recommended_acquisition_path: manifest.assessment.recommended_acquisition_path,
+    })
+}
+
 fn write_artifacts(
     output: &Path,
     evidence: &EvidenceBundleV1,
@@ -150,6 +237,23 @@ fn write_artifacts(
         artifacts: manifest_entries,
     };
     write_canonical(&output.join("run-manifest.json"), &manifest)?;
+    Ok(())
+}
+
+fn write_preflight_artifacts(output: &Path, manifest: &EstateManifestV1) -> Result<()> {
+    let artifact_path = output.join("estate-manifest.json");
+    let bytes = write_canonical(&artifact_path, manifest)?;
+    let run_manifest = PreflightRunManifestV1 {
+        api_version: "proof-migrate.dev/preflight-run-manifest/v1".to_owned(),
+        estate_id: manifest.estate_id.clone(),
+        semantic_snapshot_id: manifest.semantic_snapshot_id.clone(),
+        artifacts: vec![ArtifactManifestEntryV1 {
+            path: "estate-manifest.json".to_owned(),
+            byte_length: bytes.len() as u64,
+            digest: domain_digest("proof-migrate:preflight-artifact:v1", &bytes),
+        }],
+    };
+    write_canonical(&output.join("preflight-run-manifest.json"), &run_manifest)?;
     Ok(())
 }
 
@@ -199,7 +303,9 @@ mod tests {
     use proof_migrate_improve::{CandidateStatus, ImprovementReportV1};
     use tempfile::tempdir;
 
-    use super::{RunConfig, run_pipeline};
+    use proof_migrate_preflight::PreflightStatus;
+
+    use super::{PreflightConfig, RunConfig, run_pipeline, run_preflight};
 
     fn root() -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -254,6 +360,43 @@ mod tests {
             target_contract: root().join("contracts/proof/contract.v1.json"),
             output: output.clone(),
             source_locale: "en-US".to_owned(),
+        });
+        assert!(result.is_err());
+        assert_eq!(
+            fs::read_to_string(output.join("keep.txt")).unwrap(),
+            "user data"
+        );
+    }
+
+    #[test]
+    fn preflight_is_byte_reproducible() {
+        let temp = tempdir().unwrap();
+        let config = |name: &str| PreflightConfig {
+            observation: root().join("evaluations/fixtures/estate-observation.synthetic.json"),
+            output: temp.path().join(name),
+        };
+        let first = run_preflight(&config("first")).unwrap();
+        let second = run_preflight(&config("second")).unwrap();
+        assert_eq!(first.status, PreflightStatus::Ready);
+        assert_eq!(second.status, PreflightStatus::Ready);
+        for name in ["estate-manifest.json", "preflight-run-manifest.json"] {
+            assert_eq!(
+                fs::read(temp.path().join("first").join(name)).unwrap(),
+                fs::read(temp.path().join("second").join(name)).unwrap(),
+                "{name} differed across identical preflight runs"
+            );
+        }
+    }
+
+    #[test]
+    fn preflight_existing_output_is_never_overwritten() {
+        let temp = tempdir().unwrap();
+        let output = temp.path().join("existing");
+        fs::create_dir(&output).unwrap();
+        fs::write(output.join("keep.txt"), "user data").unwrap();
+        let result = run_preflight(&PreflightConfig {
+            observation: root().join("evaluations/fixtures/estate-observation.synthetic.json"),
+            output: output.clone(),
         });
         assert!(result.is_err());
         assert_eq!(

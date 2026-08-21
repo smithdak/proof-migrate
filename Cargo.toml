@@ -6,6 +6,7 @@ members = [
     "crates/proof-projector",
     "crates/evaluate",
     "crates/improve",
+    "crates/preflight",
 ]
 resolver = "3"
 
@@ -23,6 +24,7 @@ proof-migrate-evaluate = { path = "crates/evaluate" }
 proof-migrate-evidence = { path = "crates/evidence-model" }
 proof-migrate-improve = { path = "crates/improve" }
 proof-migrate-normalize = { path = "crates/normalize" }
+proof-migrate-preflight = { path = "crates/preflight" }
 proof-migrate-projector = { path = "crates/proof-projector" }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
@@ -38,4 +40,3 @@ unsafe_code = "forbid"
 [workspace.lints.clippy]
 all = "warn"
 pedantic = "warn"
-
